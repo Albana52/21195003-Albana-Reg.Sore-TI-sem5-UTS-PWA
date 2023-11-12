@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indeks Mahasiswa</title>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('service-worker.js',{scope:'/'})
+            .then((registration) => {
+              console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch((error) => {
+              console.error('Service Worker registration failed:', error);
+            });
+        }
+      </script>
+      
+</head>
+<body>
+    <h1>Profil Mahasiswa STMIK YMI TEGAL</h1>
+    <img src="profil.jpg" alt="Foto Profil">
+    <p>Nama: MUHAMMAD SYIFA ALBANA</p>
+    <p>NIM: 21195003</p>
+    <p>Kelas: TI (Reguler Sore)</p>
+    <p>Semester: 5</p>
+    <p>Mata Kuliah: Mobile Programming PWA</p>
+    <p>Tujuan Belajar Mobile Programming PWA: Saya ingin belajar mobile programming PWA untuk mengembangkan aplikasi web yang dapat berjalan di berbagai perangkat dan platform dengan performa yang baik.</p>
+
+    <h2>Komentar:</h2>
+    <form id="komentar-form">
+        <label for="komentar">Masukkan Komentar:</label>
+        <textarea id="komentar" rows="4" cols="50"></textarea>
+        <button type="button" id="simpan-komentar">Simpan Komentar</button>
+    </form>
+
+    <script>
+        // Membuka database IndexedDB
+        var db;
+        var request = window.indexedDB.open("komentarDB", 1);
+
+        request.onerror = function(event) {
+            console.error("Error saat membuka database: " + event.target.errorCode);
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+        };
+
+        request.onupgradeneeded = function(event) {
+            var db = event.target.result;
+            var objectStore = db.createObjectStore("komentar", { keyPath: "id", autoIncrement: true });
+            objectStore.createIndex("komentarText", "komentar", { unique: false });
+        };
+
+        // Simpan komentar ke IndexedDB
+        document.getElementById("simpan-komentar").addEventListener("click", function() {
+            var komentarText = document.getElementById("komentar").value;
+
+            var transaction = db.transaction(["komentar"], "readwrite");
+            var objectStore = transaction.objectStore("komentar");
+            var request = objectStore.add({ komentar: komentarText });
+
+            request.onsuccess = function(event) {
+                alert("Komentar berhasil disimpan!");
+                document.getElementById("komentar").value = "";
+            };
+
+            request.onerror = function(event) {
+                console.error("Gagal menyimpan komentar: " + event.target.errorCode);
+            };
+        });
+        // Meminta izin notifikasi
+Notification.requestPermission().then((permission) => {
+  if (permission === 'granted') {
+    console.log('Izin notifikasi diberikan');
+  }
+});
+
+// Mengirim notifikasi
+function sendNotification() {
+  if (Notification.permission === 'granted') {
+    const options = {
+      body: 'Ini adalah notifikasi dari aplikasi Profil Mahasiswa.',
+      icon: 'icon-notif.png',
+    };
+
+    new Notification('Notifikasi', options);
+  }
+}
+
+    </script>
+</body>
+</html>
